@@ -1,43 +1,26 @@
-import { createClient } from 'contentful';
+import React from 'react';
 import { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import CartUpdate from './CartUpdate';
+import { useParams } from 'react-router-dom';
 import axios from 'axios';
-const SingleProductPage = () => {
-	const { id } = useParams();
+import CartUpdate from './CartUpdate';
 
-	const [singleProduct, setSingleProduct] = useState(null);
-	const [singleImage, setSingleImage] = useState([]);
-	const [selected, setSelected] = useState(0);
-	const [selectedImageURL, setSelectedImageURL] = useState();
+const SingleProductPage = () => {
+	const [data, setData] = useState(null);
+	// const [selected, setSelected] = useState(0);
 	const [buttonText, setButtonText] = useState('Add To Cart');
 	const [showPopUp, setShowPopUp] = useState(false);
-	const [data, setData] = useState([]);
+	const { id } = useParams();
 
-	const fetchData = async () =>
-		await axios('http://localhost:8080/')
-			.then((res) => {
-				console.log(res.data);
-				setData(res.data);
-			})
-			// .then((response) => {
-			// 	setSingleProduct(response[0]);
-			// 	console.log(response[0]);
-			// setSingleImage(response.fields.productDetailsPageImages);
-			// setSelectedImageURL(
-			// 	response.fields.productDetailsPageImages[0].fields.file.url
-			// );
-			// })
-			.catch(console.error);
+	const fetchData = async () => {
+		await axios(`http://localhost:8080/${id}`).then((res) => {
+			console.log(res.data);
+			setData(res.data);
+		});
+	};
 
 	useEffect(() => {
 		fetchData();
 	}, []);
-
-	function toggleBorder(index, URL) {
-		setSelected(index);
-		setSelectedImageURL(URL);
-	}
 
 	function buttonClicked() {
 		setButtonText('add more');
@@ -46,38 +29,12 @@ const SingleProductPage = () => {
 	function closePopUp() {
 		setShowPopUp(false);
 	}
+
 	return (
 		<div>
-			{' '}
-			Hello
 			{data ? (
 				<div className='wrapper py-14'>
 					<div className=' flex m-10 '>
-						<div>
-							{singleImage ? (
-								<div className='flex flex-col mr-6'>
-									{singleImage.map((image, index) => (
-										<Link>
-											<img
-												className={`p-2 ${
-													selected === index ? 'border-2 border-black ' : ''
-												}`}
-												onClick={() =>
-													toggleBorder(index, image.fields.file.url)
-												}
-												width={75}
-												height={75}
-												key={image.sys.id}
-												src={image.fields.file.url}
-												alt={image.fields.file.fileName}
-											/>
-										</Link>
-									))}
-								</div>
-							) : (
-								<p> Loading...</p>
-							)}
-						</div>
 						<div className='w-2/5'>
 							<img src={data.img} alt='image' />
 						</div>
@@ -109,9 +66,9 @@ const SingleProductPage = () => {
 							>
 								{buttonText}
 							</button>
-							{/* {showPopUp && (
-								<CartUpdate closeEvent={closePopUp} image={selectedImageURL} />
-							)} */}
+							{showPopUp && (
+								<CartUpdate closeEvent={closePopUp} image={data.img} />
+							)}
 							<br />
 							<span className='text-balance'>{data.description}</span>
 						</div>
